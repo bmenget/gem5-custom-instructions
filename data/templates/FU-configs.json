@@ -67,7 +67,7 @@
         {
           "id": "minor-FU-instantiation",
           "anchor": [
-            "class MinorDefaultFUPool(MinorFUPool):",
+            "class MinorDefaultFUPool(MinorFUPool):"
           ],
           "params": true,
           "insert after": false,
@@ -105,7 +105,7 @@
           "insert after": true,
           "anchor": [
             "namespace gem5",
-            "{",
+            "{"
           ],
           "code": "static const OpClass $<opclass>Op = enums::$<opclass>;"
         }
