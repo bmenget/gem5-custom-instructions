@@ -169,40 +169,39 @@ def verify_yaml():
     '''Verify the instructions.yaml file for correct structure, required fields, and data types.'''
     try:
         instructions = load_yaml(INSTRUCTIONS_PATH)
+        is_valid = True
+        for arch, entries in instructions.items():
+            if not isinstance(entries, list):
+                continue
+            if arch == "schema_version":
+                if not isinstance(entries, int):
+                    print("'schema_version' must be an integer.")
+                    is_valid = False
+                continue
+
+            if arch not in architectureFields:
+                print(f"Unknown architecture field: {arch}")
+                is_valid = False
+
+            for entry in entries:
+                if not verify_entry_fields(entry):
+                    is_valid = False
+                if not verify_entry_field_data(entry):
+                    is_valid = False
+
+            if duplicate_names(instructions[arch]):
+                is_valid = False
+
+        if duplicate_opclasses(instructions):
+            is_valid = False
+
+        if is_valid:
+            print("YAML validation passed.")
+        else:
+            print("YAML validation failed.")
     except (OSError, ValueError) as error:
         print(error)
         return False
-
-    is_valid = True
-    for arch, entries in instructions.items():
-        if not isinstance(entries, list):
-            continue
-        if arch == "schema_version":
-            if not isinstance(entries, int):
-                print("'schema_version' must be an integer.")
-                is_valid = False
-            continue
-  
-        if arch not in architectureFields:
-            print(f"Unknown architecture field: {arch}")
-            is_valid = False
-  
-        for entry in entries:
-            if not verify_entry_fields(entry):
-                is_valid = False
-            if not verify_entry_field_data(entry):
-                is_valid = False
-  
-        if duplicate_names(instructions[arch]):
-            is_valid = False
-
-    if duplicate_opclasses(instructions):
-        is_valid = False
-
-    if is_valid:
-        print("YAML validation passed.")
-    else:
-        print("YAML validation failed.")
   
 
 

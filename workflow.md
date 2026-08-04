@@ -291,3 +291,62 @@ Step 7 fails partway.
 
 
 ---
+
+
+
+# -------- Future Features -------------
+## Implementing x86, ARM
+## Backups
+   - user can backup target files before editting 
+## Toggleable Backups on YAML
+   - user can toggle whether or not to save copies as backups upon each run
+## Restore backups
+   - user can run CLI to restore their gem5 tree to a specific backup number
+
+
+
+
+# ---------------- Structure ----------------
+myproject/
+│ 
+├── data/
+│ ├── cache/               # files with static data, version dependent(?)
+│ │ └── gem5-opclasses.yaml
+│ │ 
+│ ├── state/               # live files that will be read & written
+│ | ├── riscv-registry.json
+│ | ├── x86-registry.json*
+│ | └── arm-registry.json*
+│ │ 
+│ └── templates/           # static files that hold parsing information for gem5 structure/files, version dependent
+│   ├── FU-configs.json
+│   ├── riscv-configs.json
+│   ├── x86-configs.json*
+│   └── arm-configs.json*
+│ 
+├── mypackage/
+│ ├── __init__.py
+│ ├── io_utils.py        ← IMPURE: file reads/writes, the "shell"
+│ ├── paths.py            ← mostly constants, minor impure bits (mkdir)
+│ ├── validation.py        ← PURE: checks data, no side effects, the "core"
+│ ├── instructions.py      ← PURE: parsing/querying logic on already-loaded data
+│ └── stages/
+│    ├── stage1_parse.py   ← IMPURE: orchestrates — calls io_utils to load, then validation/instructions to process
+│    ├── stage2_generate.py
+│    ├── stage3_apply.py    ← IMPURE: writes final output to disk
+│    └── ........
+│ 
+├── backups/ *
+│ ├──<date,time>/
+│ │ └── <files>.c
+│ │ └── ....
+│ │ 
+│ └──<date,time>/
+│   └── <files>.c
+│   └── ....
+│
+├── instructions.yaml
+├── sync_instructions.py
+├── setup.sh
+├── run.sh
+└── README.md

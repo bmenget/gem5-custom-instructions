@@ -77,6 +77,3 @@ riscv_instructions:
     description: "Special instruction part of IntALU class."
     opclass: "intalu"
     auto_manage: true
-
-
-x86_instructions:

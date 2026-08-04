@@ -6,6 +6,7 @@
             "new": true,
             "removed": false,
             "changed": false,
+            "is_custom": true,
             "auto_managed": true,
             "params": [
                 {
