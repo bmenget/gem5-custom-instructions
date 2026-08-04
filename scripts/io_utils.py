@@ -2,7 +2,7 @@ from pathlib import Path
 import yaml
 import json
 
-def loadYaml(path: Path | str) -> dict:
+def load_yaml(path: Path | str) -> dict:
     path = Path(path)
     with open(path, "r") as f:
         try:
@@ -31,7 +31,7 @@ def loadYaml(path: Path | str) -> dict:
     return data
 
 
-def loadJson(path: Path | str) -> dict:
+def load_json(path: Path | str) -> dict:
     path = Path(path)
     with open(path, "r") as f:
         try:

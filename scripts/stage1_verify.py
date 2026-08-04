@@ -1,5 +1,5 @@
 import re
-from io_utils import loadYaml, loadJson
+from io_utils import load_yaml, load_json
 from paths import INSTRUCTIONS_PATH, DATA_DIR
 
 NAME_PATTERN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
@@ -24,8 +24,8 @@ architectureFields = {
 }
 
         
-def isGem5Opclass(opclass: str) -> bool:
-    gem5_opclasses = loadJson(DATA_DIR / "cache" / "gem5-opclasses.json")
+def is_gem5_opclass(opclass: str) -> bool:
+    gem5_opclasses = load_json(DATA_DIR / "cache" / "gem5-opclasses.json")
     known_opclasses = {
         known_opclass.lower(): known_opclass
         for known_opclass in gem5_opclasses.get("opclasses", [])
@@ -35,7 +35,7 @@ def isGem5Opclass(opclass: str) -> bool:
         return True
     return False
 
-def verifyEntryFields(entry: dict) -> bool:
+def verify_entry_fields(entry: dict) -> bool:
     if not isinstance(entry, dict):
         print("Each instruction entry must be a mapping/object.")
         return False
@@ -46,7 +46,7 @@ def verifyEntryFields(entry: dict) -> bool:
         print(f"Missing 'opclass' field in '{entry.get('name', '?')}'.")
         return False
     
-    if isGem5Opclass(entry.get("opclass")):
+    if is_gem5_opclass(entry.get("opclass")):
         required_fields = set(baseFields.keys())
         ignored = entry_fields & set(opclassFields.keys())
         unknown = entry_fields - required_fields - ignored
@@ -70,7 +70,7 @@ def verifyEntryFields(entry: dict) -> bool:
     
     return is_valid
 
-def verifyEntryFieldData(entry: dict) -> bool:
+def verify_entry_field_data(entry: dict) -> bool:
     is_valid = True
     name = entry.get("name", "?")
 
@@ -83,7 +83,7 @@ def verifyEntryFieldData(entry: dict) -> bool:
             print(f"Field '{field}' in '{name}' must be of type {expected_type.__name__}.")
             is_valid = False
 
-    if "opclass" in entry and not isGem5Opclass(entry["opclass"]):
+    if "opclass" in entry and not is_gem5_opclass(entry["opclass"]):
         for field, expected_type in opclassFields.items():
             if field in entry and not isinstance(entry[field], expected_type):
                 print(f"Field '{field}' in '{name}' must be of type {expected_type.__name__}.")
@@ -98,7 +98,7 @@ def verifyEntryFieldData(entry: dict) -> bool:
 
     return is_valid
 
-def duplicateNames(instructions: list[dict]) -> bool:
+def duplicate_names(instructions: list[dict]) -> bool:
     instruction_names = set()
     opclass_names = set()
  
@@ -113,7 +113,7 @@ def duplicateNames(instructions: list[dict]) -> bool:
   
     return False
 
-def duplicateOpclasses(instructions: dict) -> bool:
+def duplicate_opclasses(instructions: dict) -> bool:
     opclass_names = set()
     for arch, entries in instructions.items():
         if arch == "schema_version" or not isinstance(entries, list):
@@ -122,16 +122,16 @@ def duplicateOpclasses(instructions: dict) -> bool:
         for entry in entries:
             opclass = entry.get("opclass")
             if opclass is not None:
-                if opclass in opclass_names and not isGem5Opclass(opclass):
+                if opclass in opclass_names and not is_gem5_opclass(opclass):
                     print(f"Duplicate opclass name found: {opclass}")
                     return True
                 opclass_names.add(opclass)
     return False
 
 
-def verifyYaml():
+def verify_yaml():
     try:
-        instructions = loadYaml(INSTRUCTIONS_PATH)
+        instructions = load_yaml(INSTRUCTIONS_PATH)
     except (OSError, ValueError) as error:
         print(error)
         return False
@@ -151,15 +151,15 @@ def verifyYaml():
             is_valid = False
   
         for entry in entries:
-            if not verifyEntryFields(entry):
+            if not verify_entry_fields(entry):
                 is_valid = False
-            if not verifyEntryFieldData(entry):
+            if not verify_entry_field_data(entry):
                 is_valid = False
   
-        if duplicateNames(instructions[arch]):
+        if duplicate_names(instructions[arch]):
             is_valid = False
 
-    if duplicateOpclasses(instructions):
+    if duplicate_opclasses(instructions):
         is_valid = False
 
     if is_valid:
@@ -170,4 +170,4 @@ def verifyYaml():
 
 
 if __name__ == "__main__":
-    verifyYaml()
+    verify_yaml()
