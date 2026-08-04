@@ -1,0 +1,48 @@
+from pathlib import Path
+import yaml
+import json
+
+def loadYaml(path: Path | str) -> dict:
+    path = Path(path)
+    with open(path, "r") as f:
+        try:
+            data = yaml.safe_load(f)
+        except yaml.YAMLError as error:
+            mark = getattr(error, "problem_mark", None)
+            problem = getattr(error, "problem", None) or "Invalid YAML syntax."
+            context = getattr(error, "context", None)
+            location = ""
+            if mark is not None:
+                location = f" at line {mark.line + 1}, column {mark.column + 1}"
+
+            message = f"YAML formatting error in {path}{location}: {problem}"
+            if context:
+                message = f"{message} ({context})"
+            message = (
+                f"{message}\n"
+                "Hint: check indentation, missing ':', and list item '-' markers near that location."
+            )
+            raise ValueError(message) from error
+
+    if data is None:
+        return {}
+    if not isinstance(data, dict):
+        raise ValueError(f"YAML root in {path} must be a mapping/object.")
+    return data
+
+
+def loadJson(path: Path | str) -> dict:
+    path = Path(path)
+    with open(path, "r") as f:
+        try:
+            data = json.load(f)
+        except json.JSONDecodeError as error:
+            message = (
+                f"JSON formatting error in {path} at line {error.lineno}, column {error.colno}: "
+                f"{error.msg}"
+            )
+            raise ValueError(message) from error
+
+    if not isinstance(data, dict):
+        raise ValueError(f"JSON root in {path} must be a mapping/object.")
+    return data

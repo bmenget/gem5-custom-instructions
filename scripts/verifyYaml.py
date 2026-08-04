@@ -1,11 +1,6 @@
-from pathlib import Path
 import re
-import yaml
-import json
-
-ROOT_DIR = Path(__file__).resolve().parents[1]
-INSTRUCTIONS_PATH = ROOT_DIR / "instructions.yaml"
-DATA_DIR = ROOT_DIR / "data"
+from ioUtils import loadYaml, loadJson
+from paths import INSTRUCTIONS_PATH, DATA_DIR
 
 NAME_PATTERN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
@@ -28,35 +23,9 @@ architectureFields = {
     "arm_instructions",
 }
 
-def loadFileAsDict(path: Path | str) -> dict:
-    path = Path(path)
-    with open(path, "r") as f:
-        if path.suffix in (".yaml", ".yml"):
-            try:
-                return yaml.safe_load(f)
-            except yaml.YAMLError as error:
-                mark = getattr(error, "problem_mark", None)
-                problem = getattr(error, "problem", None) or "Invalid YAML syntax."
-                context = getattr(error, "context", None)
-                location = ""
-                if mark is not None:
-                    location = f" at line {mark.line + 1}, column {mark.column + 1}"
-
-                message = f"YAML formatting error in {path}{location}: {problem}"
-                if context:
-                    message = f"{message} ({context})"
-                message = (
-                    f"{message}\n"
-                    "Hint: check indentation, missing ':', and list item '-' markers near that location."
-                )
-                raise ValueError(message) from error
-        elif path.suffix == ".json":
-            return json.load(f)
-        else:
-            raise ValueError(f"Unsupported file type: {path.suffix}")
         
 def isGem5Opclass(opclass: str) -> bool:
-    gem5_opclasses = loadFileAsDict(DATA_DIR / "cache" / "gem5-opclasses.json")
+    gem5_opclasses = loadJson(DATA_DIR / "cache" / "gem5-opclasses.json")
     known_opclasses = {
         known_opclass.lower(): known_opclass
         for known_opclass in gem5_opclasses.get("opclasses", [])
@@ -162,13 +131,9 @@ def duplicateOpclasses(instructions: dict) -> bool:
 
 def verifyYaml():
     try:
-        instructions = loadFileAsDict(INSTRUCTIONS_PATH)
+        instructions = loadYaml(INSTRUCTIONS_PATH)
     except (OSError, ValueError) as error:
         print(error)
-        return False
-
-    if not isinstance(instructions, dict):
-        print("YAML root must be a mapping/object.")
         return False
 
     is_valid = True
