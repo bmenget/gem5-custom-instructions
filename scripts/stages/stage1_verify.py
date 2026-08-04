@@ -30,7 +30,7 @@ Cross-entry validation
 
 import re
 from io_utils import load_yaml, load_json
-from paths import INSTRUCTIONS_PATH, DATA_DIR
+from paths import INSTRUCTIONS_PATH, LOOKUPS_DIR
 
 # Typical C function name pattern: starts with a letter or underscore, followed by letters, digits, or underscores.
 NAME_PATTERN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
@@ -57,7 +57,7 @@ architectureFields = {
         
 def is_gem5_opclass(opclass: str) -> bool:
     '''Check if the given opclass is a known gem5 opclass. Looks at the gem5-opclasses.json file in the data/cache directory.'''
-    gem5_opclasses = load_json(DATA_DIR / "cache" / "gem5-opclasses.json")
+    gem5_opclasses = load_json(LOOKUPS_DIR / "gem5-opclasses.json")
     known_opclasses = {
         known_opclass.lower(): known_opclass
         for known_opclass in gem5_opclasses.get("opclasses", [])
