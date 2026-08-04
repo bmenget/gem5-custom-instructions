@@ -1,5 +1,5 @@
 import re
-from ioUtils import loadYaml, loadJson
+from io_utils import loadYaml, loadJson
 from paths import INSTRUCTIONS_PATH, DATA_DIR
 
 NAME_PATTERN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
