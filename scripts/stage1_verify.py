@@ -1,7 +1,38 @@
+"""
+Validate riscv_instructions.yaml for correct structure, required fields,
+and data types.
+
+Per-entry validation
+---------------------
+Each instruction entry must:
+    - Include all required fields: name, description, opclass, auto_manage.
+    - Have a name that is a valid C-identifier (starts with a letter or
+      underscore, followed by letters, digits, or underscores).
+    - Have auto_manage defined as a boolean.
+
+Opclass-dependent rules
+------------------------
+    - If opclass is a known gem5 opclass, latency, fu_count, and pipelined
+      must NOT be present (if present, they are ignored rather than
+      flagged as errors).
+          NOTE: this behavior may change — these fields may become
+          meaningful for future extensions.
+    - If opclass is not a known gem5 opclass, latency and fu_count must be
+      defined as positive integers, and pipelined must be a boolean.
+
+Cross-entry validation
+------------------------
+    - No duplicate instruction names within a single architecture.
+    - No duplicate opclass names across all architectures (known gem5
+      opclasses excluded from this check).
+"""
+
+
 import re
 from io_utils import load_yaml, load_json
 from paths import INSTRUCTIONS_PATH, DATA_DIR
 
+# Typical C function name pattern: starts with a letter or underscore, followed by letters, digits, or underscores.
 NAME_PATTERN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
 baseFields = {
@@ -25,6 +56,7 @@ architectureFields = {
 
         
 def is_gem5_opclass(opclass: str) -> bool:
+    '''Check if the given opclass is a known gem5 opclass. Looks at the gem5-opclasses.json file in the data/cache directory.'''
     gem5_opclasses = load_json(DATA_DIR / "cache" / "gem5-opclasses.json")
     known_opclasses = {
         known_opclass.lower(): known_opclass
@@ -36,6 +68,7 @@ def is_gem5_opclass(opclass: str) -> bool:
     return False
 
 def verify_entry_fields(entry: dict) -> bool:
+    '''Verify that the entry has the required fields, highlights missing, unknown, and ignored fields.'''
     if not isinstance(entry, dict):
         print("Each instruction entry must be a mapping/object.")
         return False
@@ -71,6 +104,7 @@ def verify_entry_fields(entry: dict) -> bool:
     return is_valid
 
 def verify_entry_field_data(entry: dict) -> bool:
+    '''Verify that the entry's fields have the correct data types and values.'''
     is_valid = True
     name = entry.get("name", "?")
 
@@ -99,6 +133,7 @@ def verify_entry_field_data(entry: dict) -> bool:
     return is_valid
 
 def duplicate_names(instructions: list[dict]) -> bool:
+    '''Check for duplicate instruction names in the list of instructions.'''
     instruction_names = set()
     opclass_names = set()
  
@@ -114,6 +149,7 @@ def duplicate_names(instructions: list[dict]) -> bool:
     return False
 
 def duplicate_opclasses(instructions: dict) -> bool:
+    '''Check for duplicate opclass names across all architectures in the instructions dictionary.'''
     opclass_names = set()
     for arch, entries in instructions.items():
         if arch == "schema_version" or not isinstance(entries, list):
@@ -130,6 +166,7 @@ def duplicate_opclasses(instructions: dict) -> bool:
 
 
 def verify_yaml():
+    '''Verify the instructions.yaml file for correct structure, required fields, and data types.'''
     try:
         instructions = load_yaml(INSTRUCTIONS_PATH)
     except (OSError, ValueError) as error:
