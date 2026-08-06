@@ -64,7 +64,7 @@ def create_change_log(arch: str, new_instructions: set, removed_instructions: se
     '''Write the changes to a JSON file for the given architecture.'''
     overlap = new_instructions & removed_instructions & changed_instructions
     if overlap:
-        raise ValueError(f"Instructions cannot be new, removed, and changed at the same time: {overlap}")
+        raise ValueError(f"❗ Instructions cannot be new, removed, and changed at the same time: {overlap}")
 
     current_changes_path = architectureInfo[arch]["changes_path"]
     try:
@@ -124,6 +124,9 @@ def record_changes(manifest: dict, registries: list[dict]) -> None:
         changed_set = changed_instructions(manifest[arch], registry["instructions"])
         change_log = create_change_log(arch, new_set, removed_set, changed_set)
         write_changes(change_log)
-        print(f"New instructions for {arch}: {new_set}")
-        print(f"Removed instructions for {arch}: {removed_set}")
-        print(f"Changed instructions for {arch}: {changed_set}")
+        if new_set:
+            print(f"🔶 New instructions for {arch}: {', '.join(new_set)}")
+        if removed_set:
+            print(f"🔶 Removed instructions for {arch}: {', '.join(removed_set)}")
+        if changed_set:
+            print(f"🔶 Updated instructions for {arch}: {', '.join(changed_set)}")

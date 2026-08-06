@@ -19,7 +19,7 @@ def load_yaml(path: Path | str) -> dict:
                 if mark is not None:
                     location = f" at line {mark.line + 1}, column {mark.column + 1}"
 
-                message = f"YAML formatting error in {path}{location}: {problem}"
+                message = f"❗ YAML formatting error in {path}{location}: {problem}"
                 if context:
                     message = f"{message} ({context})"
                 message = (
@@ -28,11 +28,11 @@ def load_yaml(path: Path | str) -> dict:
                 )
                 raise ValueError(message) from error
     except FileNotFoundError as error:
-        raise ValueError(f"YAML file not found: {path}") from error
+        raise ValueError(f"❓ YAML file not found: {path}") from error
     except PermissionError as error:
-        raise ValueError(f"Permission denied reading YAML file: {path}") from error
+        raise ValueError(f"⛔ Permission denied reading YAML file: {path}") from error
     except OSError as error:
-        raise ValueError(f"Unable to read YAML file {path}: {error}") from error
+        raise ValueError(f"⛔ Unable to read YAML file {path}: {error}") from error
 
     if data is None:
         return {}
@@ -49,30 +49,29 @@ def load_json(path: Path | str) -> dict:
                 data = json.load(f)
             except json.JSONDecodeError as error:
                 message = (
-                    f"JSON formatting error in {path} at line {error.lineno}, column {error.colno}: "
+                    f"🛑 JSON formatting error in {path} at line {error.lineno}, column {error.colno}: "
                     f"{error.msg}"
+                    f"\n🔧 Possible file corruption. Backup gem5 source files and restore the original {path} from a clean gem5 source tree."
                 )
                 raise ValueError(message) from error
     except FileNotFoundError as error:
-        raise ValueError(f"JSON file not found: {path}") from error
+        raise FileNotFoundError(f"⛔ JSON file not found: {path}") from error
     except PermissionError as error:
-        raise ValueError(f"Permission denied reading JSON file: {path}") from error
+        raise PermissionError(f"⛔ Permission denied reading JSON file: {path}") from error
     except OSError as error:
-        raise ValueError(f"Unable to read JSON file {path}: {error}") from error
-
-    if not isinstance(data, dict):
-        raise ValueError(f"JSON root in {path} must be a mapping/object.")
+        raise OSError(f"⛔ Unable to read JSON file {path}: {error}") from error
 
     resolved = path.resolve()
     schema = schema_mappings.get(resolved)
     if schema is not None:
-        schema_name = path.stem.replace("-", "_") + "_schema"  # e.g. "riscv_registry_schema"
+        schema_name = path.stem.replace("-", "_") + "_schema"
         try:
             validate_schema(data, schema, name=schema_name)
         except ValueError as error:
-            raise ValueError(f"Schema validation failed for {path}: {error}") from error
+            raise RuntimeError(f"🔧 Schema validation failed for {path}: {error}") from error
 
     return data
+
 
 def load_registries() -> list[dict]:
     registries = []
@@ -80,9 +79,20 @@ def load_registries() -> list[dict]:
         registry_path = architectureInfo[arch]["registry_path"]
         try:
             registry_data = load_json(registry_path)
-        except ValueError as error:
+        except FileNotFoundError:
             write_json(registry_path, {"version": 0, "architecture": arch, "instructions": []})
             registry_data = {"version": 0, "architecture": arch, "instructions": []}
+            print(f"🔶 Created new registry file for {arch} at {registry_path}")
+        except ValueError:
+            # load_json already built a fully-formatted message (JSON syntax error
+            # with line/col, or a non-dict root) -- just let it propagate as-is.
+            raise
+        except RuntimeError:
+            # load_json already built a fully-formatted schema validation message.
+            raise
+        except (PermissionError, OSError) as error:
+            raise OSError(f"⛔ Unable to read registry file {registry_path}: {error}") from error
+
         registries.append(registry_data)
     return registries
 
@@ -93,6 +103,6 @@ def write_json(path: Path | str, data: dict) -> None:
         with open(path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4)
     except PermissionError as error:
-        raise ValueError(f"Permission denied writing JSON file: {path}") from error
+        raise ValueError(f"⛔ Permission denied writing JSON file: {path}") from error
     except OSError as error:
-        raise ValueError(f"Unable to write JSON file {path}: {error}") from error
+        raise ValueError(f"⛔ Unable to write JSON file {path}: {error}") from error

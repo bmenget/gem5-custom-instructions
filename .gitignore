@@ -1,7 +1,6 @@
 gem5/
 git-notes.md
 tests
-instructions.yaml
 main.py
 change-logs/
 state/
@@ -9,3 +8,4 @@ state/
 # Python cache files
 __pycache__/
 *.pyc
+instructions.yaml
