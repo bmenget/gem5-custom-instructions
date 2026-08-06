@@ -1,8 +1,9 @@
 from pathlib import Path
 import yaml
 import json
-from shared import paths
-from shared import verify
+from shared.paths import schema_mappings 
+from shared.paths import architectureInfo
+from shared.verify import validate_schema
 
 def load_yaml(path: Path | str) -> dict:
     path = Path(path)
@@ -63,12 +64,35 @@ def load_json(path: Path | str) -> dict:
         raise ValueError(f"JSON root in {path} must be a mapping/object.")
 
     resolved = path.resolve()
-    schema = paths.schema_mappings.get(resolved)
+    schema = schema_mappings.get(resolved)
     if schema is not None:
         schema_name = path.stem.replace("-", "_") + "_schema"  # e.g. "riscv_registry_schema"
         try:
-            verify.validate_schema(data, schema, name=schema_name)
+            validate_schema(data, schema, name=schema_name)
         except ValueError as error:
             raise ValueError(f"Schema validation failed for {path}: {error}") from error
 
     return data
+
+def load_registries() -> list[dict]:
+    registries = []
+    for arch in architectureInfo:
+        registry_path = architectureInfo[arch]["registry_path"]
+        try:
+            registry_data = load_json(registry_path)
+        except ValueError as error:
+            write_json(registry_path, {"version": 0, "architecture": arch, "instructions": []})
+            registry_data = {"version": 0, "architecture": arch, "instructions": []}
+        registries.append(registry_data)
+    return registries
+
+def write_json(path: Path | str, data: dict) -> None:
+    path = Path(path)
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)  # ensure the directory exists
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=4)
+    except PermissionError as error:
+        raise ValueError(f"Permission denied writing JSON file: {path}") from error
+    except OSError as error:
+        raise ValueError(f"Unable to write JSON file {path}: {error}") from error

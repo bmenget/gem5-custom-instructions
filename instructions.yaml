@@ -65,10 +65,10 @@ riscv:
   - name: "hardware_extension"
     description: "Custom hardware extension"
     opclass: "Custom"
-    latency: 22
+    latency: 21
     fu_count: 1
     pipelined: true
-    auto_manage: false
+    auto_manage: true
 
   # Example 2: instruction that reuses gem5's built-in IntALU timing.
   # latency/pipelined/fu_count are omitted — IntALU's own timing and unit
@@ -77,3 +77,24 @@ riscv:
     description: "Special instruction part of IntALU class."
     opclass: "intalu"
     auto_manage: true
+
+x86:
+
+  # Example 1: brand-new custom instruction with its own dedicated FU(s).
+  # latency/pipelined/fu_count apply here because opclass is "custom".
+  - name: "hardware_extension"
+    description: "Custom hardware extension"
+    opclass: "Cm"
+    latency: 21
+    fu_count: 1
+    pipelined: true
+    auto_manage: true
+
+  # Example 2: instruction that reuses gem5's built-in IntALU timing.
+  # latency/pipelined/fu_count are omitted — IntALU's own timing and unit
+  # count apply, so there's nothing for these fields to configure.
+  - name: "special_ALU_instruction"
+    description: "Special instruction part of IntALU class."
+    opclass: "intalu"
+    auto_manage: true
+

@@ -3,6 +3,8 @@ git-notes.md
 tests
 instructions.yaml
 main.py
+change-logs/
+state/
 
 # Python cache files
 __pycache__/

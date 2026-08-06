@@ -30,10 +30,19 @@ Cross-entry validation
 import sys
 import re
 from shared.paths import architectureInfo
-from shared.verify import (
-    baseFields,
-    opclassFields
-)
+
+baseFields = {
+    "name": str,
+    "description": str,
+    "opclass": str,
+    "auto_manage": bool
+}
+
+opclassFields = {
+    "latency": int,
+    "fu_count": int,
+    "pipelined": bool
+}
 
 # Typical C function name pattern: starts with a letter or underscore, followed by letters, digits, or underscores.
 NAME_PATTERN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")

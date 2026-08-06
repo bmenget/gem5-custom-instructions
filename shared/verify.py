@@ -7,14 +7,12 @@ registry_schema = {
         {
             "name": str,
             "auto_managed": bool,
-            "params": {
-                "opclass": str,
-                "oplat": int,
-                "fu_count": int,
-                "pipelined": bool,
-                "funct3": int,
-                "funct7": int,
-            },
+            "opclass": str,
+            "oplat": int,
+            "fu_count": int,
+            "pipelined": bool,
+            "funct3": int,
+            "funct7": int,
         }
     ],
 }
@@ -25,17 +23,17 @@ gem5_opclass_schema = {
     "opclasses": list
 }
 
-baseFields = {
-    "name": str,
-    "description": str,
-    "opclass": str,
-    "auto_manage": bool
-}
+changes_schema = {
+    "version": int,
+    "architecture": str,
+    "instructions": [
+        {
+            "new": bool,
+            "removed": bool,
+            "changed": bool,
+        }
+    ]
 
-opclassFields = {
-    "latency": int,
-    "fu_count": int,
-    "pipelined": bool
 }
 
 
