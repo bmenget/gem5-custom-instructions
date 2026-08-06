@@ -1,5 +1,4 @@
 import sys
-
 from stages import stage1_verify as s1
 from shared import io_utils as io
 from shared import paths
@@ -10,7 +9,10 @@ def main():
     try:
         yaml_file = io.load_yaml(paths.INSTRUCTIONS_PATH)
         opclass_file = io.load_json(paths.OPCLASSES_PATH)
+
         s1.verify_yaml(yaml_file, opclass_file)
+
+
     except ValueError as error:
         print(error, file=sys.stderr)
         return 1

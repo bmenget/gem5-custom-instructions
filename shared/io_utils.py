@@ -1,6 +1,8 @@
 from pathlib import Path
 import yaml
 import json
+from shared import paths
+from shared import verify
 
 def load_yaml(path: Path | str) -> dict:
     path = Path(path)
@@ -59,4 +61,14 @@ def load_json(path: Path | str) -> dict:
 
     if not isinstance(data, dict):
         raise ValueError(f"JSON root in {path} must be a mapping/object.")
+
+    resolved = path.resolve()
+    schema = paths.schema_mappings.get(resolved)
+    if schema is not None:
+        schema_name = path.stem.replace("-", "_") + "_schema"  # e.g. "riscv_registry_schema"
+        try:
+            verify.validate_schema(data, schema, name=schema_name)
+        except ValueError as error:
+            raise ValueError(f"Schema validation failed for {path}: {error}") from error
+
     return data

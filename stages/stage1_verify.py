@@ -27,12 +27,12 @@ Cross-entry validation
       opclasses excluded from this check).
 """
 
-
+import sys
 import re
-from shared.yaml_stuff import (
+from shared.paths import architectureInfo
+from shared.verify import (
     baseFields,
-    opclassFields,
-    architectureInfo
+    opclassFields
 )
 
 # Typical C function name pattern: starts with a letter or underscore, followed by letters, digits, or underscores.
@@ -153,16 +153,17 @@ def verify_yaml(yaml_file: dict, opclass_file: dict) -> bool:
 
     is_valid = True
 
-    for arch in yaml_file.keys():        
+    for arch in yaml_file:        
         if arch == "schema_version":
             if not isinstance(yaml_file[arch], int):
                 print("'schema_version' must be an integer.")
                 is_valid = False
             continue
 
-        if arch not in architectureInfo.keys():
+        if arch not in architectureInfo:
             print(f"Unknown architecture field: {arch}")
             is_valid = False
+            continue
 
         for entry in yaml_file[arch]:
             if not isinstance(entry, dict):
@@ -186,5 +187,7 @@ def verify_yaml(yaml_file: dict, opclass_file: dict) -> bool:
         print("YAML validation passed.")
     else:
         print("YAML validation failed.")
+        print("Please fix the above issues in the instructions.yaml file and try again.")
+        sys.exit(1)
 
     return is_valid

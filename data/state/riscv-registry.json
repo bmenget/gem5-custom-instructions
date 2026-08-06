@@ -1,23 +1,18 @@
 {
-    "schema_version": "1.0",
+    "version": 1,
+    "architecture": "riscv",
     "instructions": [
         {
             "name": "hardware_extension",
-            "new": true,
-            "removed": false,
-            "changed": false,
-            "is_custom": true,
             "auto_managed": true,
-            "params": [
-                {
-                    "opclass": "custom",
-                    "oplat": 22,
-                    "fu_count": 1,
-                    "pipelined": true,
-                    "funct3": 2,
-                    "funct7": 0
-                }
-            ]
+            "params": {
+                "opclass": "custom",
+                "oplat": 22,
+                "fu_count": 1,
+                "pipelined": true,
+                "funct3": 2,
+                "funct7": 0
+            }
         }
     ]
 }

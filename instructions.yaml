@@ -58,7 +58,7 @@ schema_version: 2
 # EXAMPLES
 # ─────────────────────────────────────────────────────────────────────────
 
-riscv-instructions:
+riscv:
 
   # Example 1: brand-new custom instruction with its own dedicated FU(s).
   # latency/pipelined/fu_count apply here because opclass is "custom".
