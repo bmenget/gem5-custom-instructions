@@ -29,35 +29,18 @@ Cross-entry validation
 
 
 import re
-from io_utils import load_yaml, load_json
-from paths import INSTRUCTIONS_PATH, LOOKUPS_DIR
+from shared.yaml_stuff import (
+    baseFields,
+    opclassFields,
+    architectureInfo
+)
 
 # Typical C function name pattern: starts with a letter or underscore, followed by letters, digits, or underscores.
 NAME_PATTERN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
-
-baseFields = {
-    "name": str,
-    "description": str,
-    "opclass": str,
-    "auto_manage": bool
-}
-
-opclassFields = {
-    "latency": int,
-    "fu_count": int,
-    "pipelined": bool
-}
-
-architectureFields = {
-    "riscv_instructions",
-    "x86_instructions",
-    "arm_instructions",
-}
-
         
-def is_gem5_opclass(opclass: str) -> bool:
+def is_gem5_opclass(opclass: str, opclass_file: dict) -> bool:
     '''Check if the given opclass is a known gem5 opclass. Looks at the gem5-opclasses.json file in the data/cache directory.'''
-    gem5_opclasses = load_json(LOOKUPS_DIR / "gem5-opclasses.json")
+    gem5_opclasses = opclass_file
     known_opclasses = {
         known_opclass.lower(): known_opclass
         for known_opclass in gem5_opclasses.get("opclasses", [])
@@ -67,8 +50,9 @@ def is_gem5_opclass(opclass: str) -> bool:
         return True
     return False
 
-def verify_entry_fields(entry: dict) -> bool:
+def verify_entry_fields(entry: dict, opclass_file: dict) -> bool:
     '''Verify that the entry has the required fields, highlights missing, unknown, and ignored fields.'''
+
     if not isinstance(entry, dict):
         print("Each instruction entry must be a mapping/object.")
         return False
@@ -79,7 +63,7 @@ def verify_entry_fields(entry: dict) -> bool:
         print(f"Missing 'opclass' field in '{entry.get('name', '?')}'.")
         return False
     
-    if is_gem5_opclass(entry.get("opclass")):
+    if is_gem5_opclass(entry.get("opclass"), opclass_file): 
         required_fields = set(baseFields.keys())
         ignored = entry_fields & set(opclassFields.keys())
         unknown = entry_fields - required_fields - ignored
@@ -103,7 +87,7 @@ def verify_entry_fields(entry: dict) -> bool:
     
     return is_valid
 
-def verify_entry_field_data(entry: dict) -> bool:
+def verify_entry_field_data(entry: dict, opclass_file: dict) -> bool:
     '''Verify that the entry's fields have the correct data types and values.'''
     is_valid = True
     name = entry.get("name", "?")
@@ -117,7 +101,7 @@ def verify_entry_field_data(entry: dict) -> bool:
             print(f"Field '{field}' in '{name}' must be of type {expected_type.__name__}.")
             is_valid = False
 
-    if "opclass" in entry and not is_gem5_opclass(entry["opclass"]):
+    if "opclass" in entry and not is_gem5_opclass(entry["opclass"], opclass_file):
         for field, expected_type in opclassFields.items():
             if field in entry and not isinstance(entry[field], expected_type):
                 print(f"Field '{field}' in '{name}' must be of type {expected_type.__name__}.")
@@ -135,7 +119,6 @@ def verify_entry_field_data(entry: dict) -> bool:
 def duplicate_names(instructions: list[dict]) -> bool:
     '''Check for duplicate instruction names in the list of instructions.'''
     instruction_names = set()
-    opclass_names = set()
  
     for entry in instructions:
         name = entry.get("name")
@@ -148,62 +131,60 @@ def duplicate_names(instructions: list[dict]) -> bool:
   
     return False
 
-def duplicate_opclasses(instructions: dict) -> bool:
+def duplicate_opclasses(yaml_file: dict, opclass_file: dict) -> bool:
     '''Check for duplicate opclass names across all architectures in the instructions dictionary.'''
     opclass_names = set()
-    for arch, entries in instructions.items():
+    for arch, entries in yaml_file.items():
         if arch == "schema_version" or not isinstance(entries, list):
             continue
 
         for entry in entries:
             opclass = entry.get("opclass")
             if opclass is not None:
-                if opclass in opclass_names and not is_gem5_opclass(opclass):
+                if opclass in opclass_names and not is_gem5_opclass(opclass, opclass_file):
                     print(f"Duplicate opclass name found: {opclass}")
                     return True
                 opclass_names.add(opclass)
     return False
 
 
-def verify_yaml():
+def verify_yaml(yaml_file: dict, opclass_file: dict) -> bool:
     '''Verify the instructions.yaml file for correct structure, required fields, and data types.'''
-    try:
-        instructions = load_yaml(INSTRUCTIONS_PATH)
-        is_valid = True
-        for arch, entries in instructions.items():
-            if not isinstance(entries, list):
-                continue
-            if arch == "schema_version":
-                if not isinstance(entries, int):
-                    print("'schema_version' must be an integer.")
-                    is_valid = False
-                continue
 
-            if arch not in architectureFields:
-                print(f"Unknown architecture field: {arch}")
+    is_valid = True
+
+    for arch in yaml_file.keys():        
+        if arch == "schema_version":
+            if not isinstance(yaml_file[arch], int):
+                print("'schema_version' must be an integer.")
                 is_valid = False
+            continue
 
-            for entry in entries:
-                if not verify_entry_fields(entry):
-                    is_valid = False
-                if not verify_entry_field_data(entry):
-                    is_valid = False
-
-            if duplicate_names(instructions[arch]):
-                is_valid = False
-
-        if duplicate_opclasses(instructions):
+        if arch not in architectureInfo.keys():
+            print(f"Unknown architecture field: {arch}")
             is_valid = False
 
-        if is_valid:
-            print("YAML validation passed.")
-        else:
-            print("YAML validation failed.")
-    except (OSError, ValueError) as error:
-        print(error)
-        return False
-  
+        for entry in yaml_file[arch]:
+            if not isinstance(entry, dict):
+                print(f"Each instruction entry must be a mapping/object. Found: {entry}")
+                is_valid = False
+                continue
 
+            if not verify_entry_fields(entry, opclass_file):
+                is_valid = False
 
-if __name__ == "__main__":
-    verify_yaml()
+            if not verify_entry_field_data(entry, opclass_file):
+                is_valid = False
+
+        if duplicate_names(yaml_file[arch]):
+            is_valid = False
+
+    if duplicate_opclasses(yaml_file, opclass_file):
+        is_valid = False
+
+    if is_valid:
+        print("YAML validation passed.")
+    else:
+        print("YAML validation failed.")
+
+    return is_valid

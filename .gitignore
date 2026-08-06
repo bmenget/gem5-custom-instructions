@@ -1,6 +1,7 @@
 gem5/
 git-notes.md
 tests
+instructions.yaml
 
 # Python cache files
 __pycache__/
