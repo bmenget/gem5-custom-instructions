@@ -16,15 +16,15 @@ def main():
 
         s1.verify_manifest(yaml_file, opclass_file)
 
-        registries = io.load_registries()
+        registry_files = io.load_registries()
         
-        s2.record_changes(yaml_file, registries)
+        s2.record_changes(yaml_file, registry_files)
 
         change_files = io.load_change_files()
-        template_files = io.load_template_files()
-        fu_mappings = io.load_json(paths.TEMPLATES_DIR / "FU-mappings.json")
+        patch_files = io.load_patch_files()
+        fu_map= io.load_json(paths.PATCHMAPS_DIR / "FU-map.json")
         
-        s3.copy_gem5_files(change_files, template_files, fu_mappings)
+        s3.copy_gem5_files(change_files, patch_files, fu_map)
 
 
 

@@ -113,17 +113,22 @@ def clear_changes(arch: str) -> None:
     }
     write_changes(change_log)
 
-def record_changes(manifest: dict, registries: list[dict]) -> None:
-    for registry in registries:
-        clear_changes(registry["architecture"])  # Clear previous changes before recording new ones
-        arch = registry["architecture"]
+def record_changes(manifest: dict, registry_files: dict[str, dict]) -> None:
+    '''Record changes for each architecture based on the manifest and registry files.'''
+    
+    for arch, registry in registry_files.items():
+        clear_changes(arch)  # Clear previous changes before recording new ones
+
         if arch not in manifest:
             continue
+        
         new_set = new_instructions(manifest[arch], registry["instructions"])
         removed_set = removed_instructions(manifest[arch], registry["instructions"])
         changed_set = changed_instructions(arch, manifest[arch], registry["instructions"])
         change_log = create_change_log(arch, new_set, removed_set, changed_set)
+
         write_changes(change_log)
+
         if new_set:
             print(f"🔶 New {arch} instructions: {', '.join(new_set)}")
         if removed_set:

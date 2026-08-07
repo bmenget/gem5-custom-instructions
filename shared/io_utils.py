@@ -82,8 +82,8 @@ def write_json(path: Path | str, data: dict) -> None:
     except OSError as error:
         raise ValueError(f"⛔ Unable to write JSON file {path}: {error}") from error
 
-def load_registries() -> list[dict]:
-    registries = []
+def load_registries() -> dict[str, dict]:
+    registries = {}
     for arch in architectureInfo:
         registry_path = architectureInfo[arch]["registry_path"]
         try:
@@ -102,11 +102,12 @@ def load_registries() -> list[dict]:
         except (PermissionError, OSError) as error:
             raise OSError(f"⛔ Unable to read registry file {registry_path}: {error}") from error
 
-        registries.append(registry_data)
+        registries[arch] = registry_data
     return registries
 
-def load_change_files() -> list[dict]:
-    changes_list = []
+
+def load_change_files() -> dict[str, dict]:
+    changes = {}
     for arch in architectureInfo:
         changes_path = architectureInfo[arch]["changes_path"]
         try:
@@ -120,24 +121,23 @@ def load_change_files() -> list[dict]:
         except (PermissionError, OSError) as error:
             raise OSError(f"⛔ Unable to read changes file {changes_path}: {error}") from error
 
-        changes_list.append(changes_data)
-    return changes_list
+        changes[arch] = changes_data
+    return changes
 
-def load_template_files() -> list[dict]:
-    templates = []
+def load_patch_files() -> dict[str, dict]:
+    patch_files = {}
     for arch in architectureInfo:
-        template_path = architectureInfo[arch]["template_path"]
+        file_path = architectureInfo[arch]["patch_map_path"]
         try:
-            template_data = load_json(template_path)
+            patch_map = load_json(file_path)
         except FileNotFoundError:
-            continue    # since i dont have x86 and arm templates, just skip them for now
+            continue    # since i dont have x86 and arm patch maps, just skip them for now
         except ValueError:
             raise
         except RuntimeError:
             raise
         except (PermissionError, OSError) as error:
-            raise OSError(f"⛔ Unable to read template file {template_path}: {error}") from error
+            raise OSError(f"⛔ Unable to read patch map file {file_path}: {error}") from error
 
-        template_data["architecture"] = arch  # tag it, since the raw JSON has no top-level architecture field
-        templates.append(template_data)
-    return templates
+        patch_files[arch] = patch_map
+    return patch_files

@@ -38,9 +38,9 @@ changes_schema = {
 
 }
 
-arch_template_schema = {
+arch_patch_map_schema = {
     "gem5_version": str,
-    "arch": str,
+    "architecture": str,
     "files": [
         {
             "file name": str,

@@ -1,6 +1,6 @@
 {
   "gem5_version": "v25.0.0.1",
-  "arch" : "arm",
+  "architecture" : "arm",
   "files": [
   ]
 }

@@ -19,7 +19,6 @@ def copy_gem5_arch_files(arch_file: dict) -> None:
         print(f"⚠️ Unknown architecture '{arch}' in change files. Skipping.")
         return
 
-    print(f"Copying files for architecture '{arch}'...")
     for file in arch_file["files"]:
         filename = file["file name"]
         relative_path = Path(file["path"])
@@ -30,8 +29,6 @@ def copy_gem5_arch_files(arch_file: dict) -> None:
 
 def copy_gem5_fu_files(fu_file: dict) -> None:
     verify_paths(fu_file)
-    
-    print(f"Copying files for FUs...")
     for file in fu_file["files"]:
         filename = file["file name"]
         relative_path = Path(file["path"])
@@ -52,25 +49,20 @@ def copy_file(source: Path, destination: Path) -> None:
     except OSError as error:
         raise OSError(f"⛔ Unable to copy file from {source} to {destination}: {error}") from error
 
-    print(f"✅ Copied '{source.name}' to '{destination.relative_to(paths.ROOT_DIR)}'")
+    #print(f"✅ Copied '{source.name}' to '{destination.relative_to(paths.ROOT_DIR)}'")
 
-def verify_paths(template_file: dict) -> None:
-    for file in template_file["files"]:
+def verify_paths(patch_file: dict) -> None:
+    for file in patch_file["files"]:
         filename = file["file name"]
         relative_path = Path(file["path"])
         source = paths.GEM5_DIR / relative_path
         if not source.exists():
             raise FileNotFoundError(f"⛔ Source file not found: {source}")
 
-def copy_gem5_files(change_files: list[dict], template_files: list[dict], fu_mappings: dict) -> None:
+def copy_gem5_files(change_files: dict[str, dict], patch_files: dict[str, dict], fu_map: dict) -> None:
     copied_FU = False
-    for template_file in template_files:
-        arch = template_file["architecture"]
-        if arch not in architectureInfo:
-            print(f"⚠️ Unknown architecture '{arch}' in template files. Skipping.")
-            continue
-
-        change_file = next((cf for cf in change_files if cf["architecture"] == arch), None)
+    for arch, patch_file in patch_files.items():
+        change_file = change_files.get(arch)
         if change_file is None:
             print(f"ℹ️ No changes for architecture '{arch}'. Skipping.")
             continue
@@ -78,8 +70,10 @@ def copy_gem5_files(change_files: list[dict], template_files: list[dict], fu_map
         if not is_arch_diff(change_file):
             continue
 
-        copy_gem5_arch_files(template_file)
+        copy_gem5_arch_files(patch_file)
 
         if not copied_FU:
-            copy_gem5_fu_files(fu_mappings)
+            copy_gem5_fu_files(fu_map)
             copied_FU = True
+            
+    print("✅ All relevant files copied successfully.")
