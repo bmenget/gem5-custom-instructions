@@ -195,7 +195,7 @@ def verify_yaml(yaml_file: dict, opclass_file: dict) -> bool:
         print("✅ instructions.yaml validation passed")
     else:
         print("❌ instructions.yaml validation failed.")
-        print("Please fix the above issues in the instructions.yaml file and try again.")
+        print("🔧 Please fix the above issues in the instructions.yaml file and try again.")
         sys.exit(1)
 
     return is_valid

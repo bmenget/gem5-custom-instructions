@@ -17,6 +17,9 @@ OPCLASSES_PATH = LOOKUPS_DIR / "gem5-opclasses.json"
 schema_mappings = {
     STATE_DIR / "riscv-registry.json": verify.registry_schema,
     LOOKUPS_DIR / "gem5-opclasses.json": verify.gem5_opclass_schema,
+    CHANGES_DIR / "riscv-changes.json": verify.changes_schema,
+    CHANGES_DIR / "x86-changes.json": verify.changes_schema,
+    CHANGES_DIR / "arm-changes.json": verify.changes_schema,
     # Add more mappings for other architectures as needed
 }
 
@@ -30,8 +33,10 @@ architectureInfo = {
         "registry_path": STATE_DIR / "x86-registry.json",
         "templates_path": TEMPLATE_DIR / "x86-mappings.json",
         "changes_path": CHANGES_DIR / "x86-changes.json"
+    },
+    "arm": {
+        "registry_path": STATE_DIR / "arm-registry.json",
+        "templates_path": TEMPLATE_DIR / "arm-mappings.json",
+        "changes_path": CHANGES_DIR / "arm-changes.json"
     }
-#     "arm": {
-#         "registry": paths.STATE_DIR / "arm-registry.json",
-#     }
 }

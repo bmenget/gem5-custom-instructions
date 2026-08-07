@@ -16,6 +16,7 @@ def main():
         s1.verify_yaml(yaml_file, opclass_file)
 
         registries = io.load_registries()
+        
         s2.record_changes(yaml_file, registries)
 
 

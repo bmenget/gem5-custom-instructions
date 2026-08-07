@@ -43,6 +43,7 @@ def changed_instructions(manifest_instructions: dict, registry_instructions: dic
     for instruction in manifest_instructions:
         name = instruction["name"]
         if instruction["auto_manage"] is False:
+            print(f"🔒 Instruction '{name}' is not auto-managed. Instruction will not be updated in gem5.")
             continue  # Only check auto-managed instructions for changes
 
         if name in registry_names:
@@ -71,6 +72,8 @@ def create_change_log(arch: str, new_instructions: set, removed_instructions: se
         current_changes = load_json(current_changes_path)
     except ValueError:
         current_changes = {}  # If the file doesn't exist or is invalid, start fresh
+    except FileNotFoundError:
+        current_changes = {}  # If the file doesn't exist, start fresh
 
     current_version = current_changes.get("version")
 
@@ -119,6 +122,9 @@ def write_changes(change_log: dict) -> None:
 def record_changes(manifest: dict, registries: list[dict]) -> None:
     for registry in registries:
         arch = registry["architecture"]
+        if arch not in manifest:
+            print(f"⚠️ No instructions found for architecture '{arch}' in the manifest. Skipping change detection.")
+            continue
         new_set = new_instructions(manifest[arch], registry["instructions"])
         removed_set = removed_instructions(manifest[arch], registry["instructions"])
         changed_set = changed_instructions(manifest[arch], registry["instructions"])

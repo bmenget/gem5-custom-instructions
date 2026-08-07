@@ -55,7 +55,7 @@ def load_json(path: Path | str) -> dict:
                 )
                 raise ValueError(message) from error
     except FileNotFoundError as error:
-        raise FileNotFoundError(f"⛔ JSON file not found: {path}") from error
+        raise FileNotFoundError(f"❓ JSON file not found: {path}") from error
     except PermissionError as error:
         raise PermissionError(f"⛔ Permission denied reading JSON file: {path}") from error
     except OSError as error:
