@@ -1,8 +1,7 @@
 from pathlib import Path
 import yaml
 import json
-from shared.paths import schema_mappings 
-from shared.paths import architectureInfo
+from shared.paths import schema_mappings, architectureInfo
 from shared.verify import validate_schema
 
 def load_yaml(path: Path | str) -> dict:
@@ -24,7 +23,7 @@ def load_yaml(path: Path | str) -> dict:
                     message = f"{message} ({context})"
                 message = (
                     f"{message}\n"
-                    "Hint: check indentation, missing ':', and list item '-' markers near that location."
+                    "🔧 Hint: check indentation, missing ':', and list item '-' markers near that location."
                 )
                 raise ValueError(message) from error
     except FileNotFoundError as error:
@@ -64,7 +63,7 @@ def load_json(path: Path | str) -> dict:
     resolved = path.resolve()
     schema = schema_mappings.get(resolved)
     if schema is not None:
-        schema_name = path.stem.replace("-", "_") + "_schema"
+        schema_name = schema_mappings.get(resolved)
         try:
             validate_schema(data, schema, name=schema_name)
         except ValueError as error:

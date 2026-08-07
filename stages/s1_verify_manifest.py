@@ -156,7 +156,7 @@ def duplicate_opclasses(yaml_file: dict, opclass_file: dict) -> bool:
     return False
 
 
-def verify_yaml(yaml_file: dict, opclass_file: dict) -> bool:
+def verify_manifest(yaml_file: dict, opclass_file: dict) -> bool:
     '''Verify the instructions.yaml file for correct structure, required fields, and data types.'''
 
     is_valid = True

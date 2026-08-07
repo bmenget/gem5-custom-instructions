@@ -1,7 +1,7 @@
 import sys
 from stages import (
-    stage1_verify as s1, 
-    stage2_find_changes as s2,
+    s1_verify_manifest as s1, 
+    s2_record_changes as s2,
 )
 from shared import io_utils as io
 from shared import paths
@@ -13,14 +13,14 @@ def main():
         yaml_file = io.load_yaml(paths.INSTRUCTIONS_PATH)
         opclass_file = io.load_json(paths.OPCLASSES_PATH)
 
-        s1.verify_yaml(yaml_file, opclass_file)
+        s1.verify_manifest(yaml_file, opclass_file)
 
         registries = io.load_registries()
         
         s2.record_changes(yaml_file, registries)
 
 
-    except ValueError as error:
+    except Exception as error:
         print(error, file=sys.stderr)
         return 1
 
