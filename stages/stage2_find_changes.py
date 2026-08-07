@@ -32,7 +32,7 @@ def removed_instructions(manifest_instructions: dict, registry_instructions: dic
     return removed_instructions
 
 
-def changed_instructions(manifest_instructions: dict, registry_instructions: dict) -> set:
+def changed_instructions(arch: str, manifest_instructions: dict, registry_instructions: dict) -> set:
     '''Find instructions that have changed in the current instructions.yaml compared to the last saved state. Returns a set of changed instructions.'''
     changed_instructions = set()
     registry_names = set()
@@ -43,7 +43,7 @@ def changed_instructions(manifest_instructions: dict, registry_instructions: dic
     for instruction in manifest_instructions:
         name = instruction["name"]
         if instruction["auto_manage"] is False:
-            print(f"🔒 Instruction '{name}' is not auto-managed. Instruction will not be updated in gem5.")
+            print(f"🔒 {arch} instruction '{name}' is not auto-managed. Instruction will not be updated in gem5.")
             continue  # Only check auto-managed instructions for changes
 
         if name in registry_names:
@@ -70,11 +70,9 @@ def create_change_log(arch: str, new_instructions: set, removed_instructions: se
     current_changes_path = architectureInfo[arch]["changes_path"]
     try:
         current_changes = load_json(current_changes_path)
-    except ValueError:
+    except:
         current_changes = {}  # If the file doesn't exist or is invalid, start fresh
-    except FileNotFoundError:
-        current_changes = {}  # If the file doesn't exist, start fresh
-
+    
     current_version = current_changes.get("version")
 
     if current_version is not None:
@@ -123,16 +121,15 @@ def record_changes(manifest: dict, registries: list[dict]) -> None:
     for registry in registries:
         arch = registry["architecture"]
         if arch not in manifest:
-            print(f"⚠️ No instructions found for architecture '{arch}' in the manifest. Skipping change detection.")
             continue
         new_set = new_instructions(manifest[arch], registry["instructions"])
         removed_set = removed_instructions(manifest[arch], registry["instructions"])
-        changed_set = changed_instructions(manifest[arch], registry["instructions"])
+        changed_set = changed_instructions(arch, manifest[arch], registry["instructions"])
         change_log = create_change_log(arch, new_set, removed_set, changed_set)
         write_changes(change_log)
         if new_set:
-            print(f"🔶 New instructions for {arch}: {', '.join(new_set)}")
+            print(f"🔶 New {arch} instructions: {', '.join(new_set)}")
         if removed_set:
-            print(f"🔶 Removed instructions for {arch}: {', '.join(removed_set)}")
+            print(f"🔶 Removed {arch} instructions: {', '.join(removed_set)}")
         if changed_set:
-            print(f"🔶 Updated instructions for {arch}: {', '.join(changed_set)}")
+            print(f"🔶 Updated {arch} instructions: {', '.join(changed_set)}")
