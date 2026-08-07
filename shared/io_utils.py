@@ -71,6 +71,16 @@ def load_json(path: Path | str) -> dict:
 
     return data
 
+def write_json(path: Path | str, data: dict) -> None:
+    path = Path(path)
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)  # ensure the directory exists
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=4)
+    except PermissionError as error:
+        raise ValueError(f"⛔ Permission denied writing JSON file: {path}") from error
+    except OSError as error:
+        raise ValueError(f"⛔ Unable to write JSON file {path}: {error}") from error
 
 def load_registries() -> list[dict]:
     registries = []
@@ -95,13 +105,39 @@ def load_registries() -> list[dict]:
         registries.append(registry_data)
     return registries
 
-def write_json(path: Path | str, data: dict) -> None:
-    path = Path(path)
-    try:
-        path.parent.mkdir(parents=True, exist_ok=True)  # ensure the directory exists
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=4)
-    except PermissionError as error:
-        raise ValueError(f"⛔ Permission denied writing JSON file: {path}") from error
-    except OSError as error:
-        raise ValueError(f"⛔ Unable to write JSON file {path}: {error}") from error
+def load_change_files() -> list[dict]:
+    changes_list = []
+    for arch in architectureInfo:
+        changes_path = architectureInfo[arch]["changes_path"]
+        try:
+            changes_data = load_json(changes_path)
+        except FileNotFoundError:
+            raise
+        except ValueError:
+            raise
+        except RuntimeError:
+            raise
+        except (PermissionError, OSError) as error:
+            raise OSError(f"⛔ Unable to read changes file {changes_path}: {error}") from error
+
+        changes_list.append(changes_data)
+    return changes_list
+
+def load_template_files() -> list[dict]:
+    templates = []
+    for arch in architectureInfo:
+        template_path = architectureInfo[arch]["template_path"]
+        try:
+            template_data = load_json(template_path)
+        except FileNotFoundError:
+            continue    # since i dont have x86 and arm templates, just skip them for now
+        except ValueError:
+            raise
+        except RuntimeError:
+            raise
+        except (PermissionError, OSError) as error:
+            raise OSError(f"⛔ Unable to read template file {template_path}: {error}") from error
+
+        template_data["architecture"] = arch  # tag it, since the raw JSON has no top-level architecture field
+        templates.append(template_data)
+    return templates

@@ -113,7 +113,7 @@ def verify_entry_field_data(entry: dict, opclass_file: dict) -> bool:
                 is_valid = False
 
     if "opclass" in entry and is_gem5_opclass(entry["opclass"], opclass_file):
-        print(f"💡 '{entry['opclass']}' is an intrinsic gem5 opclass. '{name}' will be integrated into gem5's built-in '{entry['opclass']}' behavior.")
+        print(f"ℹ️ '{entry['opclass']}' is an intrinsic gem5 opclass. '{name}' will be integrated into gem5's built-in '{entry['opclass']}' behavior.")
 
     for field in ("latency", "fu_count"):
         if field in entry:

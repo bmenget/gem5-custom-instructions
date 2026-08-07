@@ -1,3 +1,4 @@
+import os
 from shared import paths
 
 registry_schema = {
@@ -35,6 +36,27 @@ changes_schema = {
         }
     ]
 
+}
+
+arch_template_schema = {
+    "gem5_version": str,
+    "arch": str,
+    "files": [
+        {
+            "file name": str,
+            "path": str,
+            "edits": [
+                {
+                    "id": str,
+                    "anchor": list,
+                    "code patch": list,
+                    "insert after": bool,
+                    "start marker": str,
+                    "end marker": str,
+                }
+            ]
+        }
+    ]
 }
 
 

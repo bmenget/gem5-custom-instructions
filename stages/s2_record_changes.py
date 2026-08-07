@@ -66,22 +66,9 @@ def create_change_log(arch: str, new_instructions: set, removed_instructions: se
     overlap = new_instructions & removed_instructions & changed_instructions
     if overlap:
         raise ValueError(f"❗ Instructions cannot be new, removed, and changed at the same time: {overlap}")
-
-    current_changes_path = architectureInfo[arch]["changes_path"]
-    try:
-        current_changes = load_json(current_changes_path)
-    except:
-        current_changes = {}  # If the file doesn't exist or is invalid, start fresh
-    
-    current_version = current_changes.get("version")
-
-    if current_version is not None:
-        new_version = current_version + 1
-    else:
-        new_version = 0
         
     change_log = {
-        "version": new_version,
+        "version": 0,
         "architecture": arch,
         "instructions": []
     }
@@ -117,8 +104,18 @@ def write_changes(change_log: dict) -> None:
     changes_path = architectureInfo[arch]["changes_path"]
     write_json(changes_path, change_log)
 
+def clear_changes(arch: str) -> None:
+    '''Clear the changes for a given architecture by writing an empty change log.'''
+    change_log = {
+        "version": 0,
+        "architecture": arch,
+        "instructions": []
+    }
+    write_changes(change_log)
+
 def record_changes(manifest: dict, registries: list[dict]) -> None:
     for registry in registries:
+        clear_changes(registry["architecture"])  # Clear previous changes before recording new ones
         arch = registry["architecture"]
         if arch not in manifest:
             continue

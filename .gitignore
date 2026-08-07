@@ -3,7 +3,7 @@ git-notes.md
 tests
 change-logs/
 state/
-
+working-copies/
 # Python cache files
 __pycache__/
 *.pyc
