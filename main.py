@@ -2,7 +2,8 @@ import sys
 from stages import (
     s1_verify_manifest as s1, 
     s2_record_changes as s2,
-    s3_copy_gem5 as s3
+    s3_copy_gem5 as s3,
+    s4_verify_gem5 as s4
 )
 from shared import io_utils as io
 from shared import paths
@@ -25,6 +26,7 @@ def main():
         fu_map= io.load_json(paths.PATCHMAPS_DIR / "FU-map.json")
         
         s3.copy_gem5_files(change_files, patch_files, fu_map)
+        s4.verify_gem5(change_files, patch_files, fu_map)
 
 
 

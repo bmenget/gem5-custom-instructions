@@ -5,10 +5,8 @@ from shared.paths import architectureInfo
 
 def is_arch_diff(change_file: dict) -> bool:
     if change_file["architecture"] not in architectureInfo:
-        print(f"⚠️ Unknown architecture '{change_file['architecture']}' in change files. Skipping.")
         return False
     if len(change_file["instructions"]) == 0:
-        print(f"ℹ️ No changes for architecture '{change_file['architecture']}'. Skipping.")
         return False
     return True
 
@@ -68,6 +66,7 @@ def copy_gem5_files(change_files: dict[str, dict], patch_files: dict[str, dict],
             continue
 
         if not is_arch_diff(change_file):
+            print(f"ℹ️ No changes for architecture '{change_file['architecture']}'. Skipping.")
             continue
 
         copy_gem5_arch_files(patch_file)
@@ -76,4 +75,7 @@ def copy_gem5_files(change_files: dict[str, dict], patch_files: dict[str, dict],
             copy_gem5_fu_files(fu_map)
             copied_FU = True
             
-    print("✅ All relevant files copied successfully.")
+    if copied_FU:
+        print("✅ All relevant files copied successfully.")
+    else:
+        print("ℹ️ No files were copied. No changes detected for any architecture.")

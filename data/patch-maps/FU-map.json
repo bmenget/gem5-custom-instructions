@@ -1,5 +1,6 @@
 {
   "gem5_version": "v25.0.0.1",
+  "architecture": "FU",
   "files": [
     {
       "file name": "FuncUnit.py",
@@ -98,7 +99,8 @@
         {
           "id": "opclass-enum-entry",
           "anchor": [
-            "}"
+            "using enums::OpClass;",
+            "using enums::No_OpClass;"
           ],
           "code patch": [
             "static const OpClass $<opclass>Op = enums::$<opclass>;"
