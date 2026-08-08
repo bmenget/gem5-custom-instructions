@@ -1,3 +1,16 @@
+"""
+Verify that all anchors specified in the patch maps exist in the corresponding source files.
+This module provides functions to verify that the anchor text specified in the patch maps
+exists in the corresponding source files. It is used to ensure that the patch maps are valid
+before applying them to the gem5 source code.
+
+======================FUTURE PLANS======================
+- Verify registry entries match the instruction entries in the gem5 source code.
+- Verify that the changes files configurations are consistent with the registry and patch maps.
+- If registry entries do not match the gem5 source code, raise an error and provide a detailed message indicating the mismatch.
+========================================================
+"""
+
 from shared import paths
 from stages.s3_copy_gem5 import is_arch_diff
 
